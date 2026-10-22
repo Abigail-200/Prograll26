@@ -1,0 +1,85 @@
+<form id="frmConsultarUsuario">
+    <div class="card text-bg-dark mb-3" style="min-width: 600px;">
+        <div class="card-header">
+            <div class="d-flex">
+                Busqueda de Usuarios
+                <div class="ms-auto">
+                    <button data-form="busqueda_usuarios" type="button" class="btn-close btn-close-white" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th colspan="5">
+                                        <input type="search" placeholder="buscar por usuario, nombre"
+                                            id="txtBuscarUsuario" name="txtBuscarUsuario"
+                                            class="form-control">
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Nombre</th>
+                                    <th>Direccion</th>
+                                    <th>Telefono</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblUsuarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    var usuariosCargados = [];
+
+    txtBuscarUsuario.addEventListener('keyup', (e) => {
+        e.preventDefault();
+        obtenerUsuarios(txtBuscarUsuario.value);
+    });
+    obtenerUsuarios();
+
+    async function obtenerUsuarios(buscar = "") {
+        let response = await fetch(`/usuarios?buscar=${encodeURIComponent(buscar)}`),
+            datos = await response.json();
+        usuariosCargados = datos || [];
+        mostrarUsuarios(usuariosCargados);
+    }
+    function escaparHtml(t) {
+        return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    function mostrarUsuarios(datos) {
+        let filas = "";
+        datos.forEach((e, i) => {
+            filas += `
+                <tr onClick='modificarUsuario(usuariosCargados[${i}], event)'>
+                    <td>${escaparHtml(e.usuario)}</td>
+                    <td>${escaparHtml(e.nombre)}</td>
+                    <td>${escaparHtml(e.direccion)}</td>
+                    <td>${escaparHtml(e.telefono)}</td>
+                    <td>
+                        <input onClick='eliminarUsuario(usuariosCargados[${i}], event)'
+                            type="button" value="DEL" class="btn btn-danger"/>
+                    </td>
+                </tr>
+            `;
+        });
+        tblUsuarios.innerHTML = filas;
+    }
+    function eliminarUsuario(data, event) {
+        event.preventDefault();
+        event.stopPropagation(); // evita que el click tambien cargue la fila en el formulario
+        if (confirm(`¿Seguro de eliminar al usuario: ${data.nombre}?`)) {
+            idUsuario = data.idUsuario;
+            accionUsuario = "eliminar";
+            guardarUsuario();
+        }
+    }
+</script>

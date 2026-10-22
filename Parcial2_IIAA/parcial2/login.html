@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema</title>
+    <style>
+        :root {
+            --aqua: #7fdbd0; --aqua-claro: #d9f7f2; --lila: #b9a4f0; --lila-oscuro: #7b5fd1;
+            --rosa: #ffc6dd; --texto: #3b3555; --suave: #8a84a3;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px;
+            font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif; color: var(--texto);
+            background: radial-gradient(circle at 15% 20%, var(--aqua-claro), transparent 45%),
+                        radial-gradient(circle at 85% 80%, #ece4ff, transparent 50%),
+                        radial-gradient(circle at 80% 10%, #ffe6f0, transparent 40%), #f7fbfd;
+        }
+        .login {
+            width: 100%; max-width: 390px; background: #fff; border-radius: 28px; padding: 32px 32px 28px;
+            box-shadow: 0 20px 50px rgba(123, 95, 209, .18); position: relative; overflow: hidden;
+        }
+        .login::before {
+            content: ""; position: absolute; inset: 0 0 auto 0; height: 8px;
+            background: linear-gradient(90deg, var(--aqua), var(--lila), var(--rosa));
+        }
+        .logo {
+            width: 64px; height: 64px; border-radius: 20px; margin: 0 auto 14px; display: grid; place-items: center;
+            font-size: 30px; background: linear-gradient(135deg, var(--aqua), var(--lila)); color: #fff;
+        }
+        h1 { margin: 0; text-align: center; font-size: 24px; }
+        p.sub { margin: 4px 0 24px; text-align: center; color: var(--suave); font-size: 14px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; color: var(--lila-oscuro); }
+        input {
+            width: 100%; padding: 13px 16px; font-size: 15px; border: 2px solid #ece8f7; border-radius: 14px;
+            background: #faf9ff; color: var(--texto); outline: none; transition: .2s;
+        }
+        input:focus { border-color: var(--aqua); background: #fff; box-shadow: 0 0 0 4px var(--aqua-claro); }
+        #msgLogin { min-height: 22px; margin-top: 12px; color: #d6456f; font-size: 14px; text-align: center; }
+        button {
+            width: 100%; margin-top: 6px; padding: 11px; font-size: 15px; font-weight: 600; color: #fff; border: 0;
+            border-radius: 8px; cursor: pointer; background: var(--lila-oscuro);
+        }
+        button:hover { opacity: .85; }
+    </style>
+</head>
+<body>
+    <form id="frmLogin" class="login">
+        <label for="txtUsuarioLogin">Usuario</label>
+        <input required placeholder="Tu usuario" id="txtUsuarioLogin" type="text" maxlength="35" autofocus>
+        <label for="txtClaveLogin">Clave</label>
+        <input required placeholder="Tu clave" id="txtClaveLogin" type="password" maxlength="35">
+        <div id="msgLogin"></div>
+        <button type="submit" id="btnIngresar">Ingresar</button>
+    </form>
+    <script>
+        frmLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msgLogin.textContent = '';
+            let datos = {
+                modulo: 'login',
+                usuario: txtUsuarioLogin.value,
+                clave: txtClaveLogin.value
+            };
+            let response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            }), respuesta = await response.json();
+            if (respuesta.msg != 'ok') {
+                msgLogin.textContent = respuesta.msg;
+                txtClaveLogin.value = '';
+                txtClaveLogin.focus();
+                return;
+            }
+            location.href = '/sistema';
+        });
+    </script>
+</body>
+</html>

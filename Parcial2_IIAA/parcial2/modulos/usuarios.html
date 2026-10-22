@@ -1,0 +1,121 @@
+<form id="frmUsuario">
+    <div class="card text-bg-dark mb-3" style="min-width: 600px;">
+        <div class="card-header">
+            <div class="d-flex">
+                Admin de Usuarios
+                <div class="ms-auto">
+                    <button data-form="usuarios" type="button" class="btn-close btn-close-white"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row p-1">
+                <div class="col-12 col-md-6">
+                    <input pattern="^[A-Za-z0-9_.]{3,35}$" required placeholder="Usuario" name="txtUsuario"
+                        id="txtUsuario" class="form-control" type="text" maxlength="35">
+                </div>
+                <div class="col-12 col-md-6">
+                    <input placeholder="Clave" name="txtClaveUsuario" id="txtClaveUsuario" class="form-control"
+                        type="password" maxlength="35">
+                </div>
+            </div>
+            <div class="row p-1">
+                <div class="col-12">
+                    <input pattern="^[A-Za-záéíóúÁÉÍÓÚñÑ ]{3,}$" required placeholder="Nombre" name="txtNombreUsuario"
+                        id="txtNombreUsuario" class="form-control" type="text" maxlength="85">
+                </div>
+            </div>
+            <div class="row p-1">
+                <div class="col-12">
+                    <input placeholder="Direccion" name="txtDireccionUsuario" id="txtDireccionUsuario"
+                        class="form-control" type="text" maxlength="100">
+                </div>
+            </div>
+            <div class="row p-1">
+                <div class="col-12 col-md-4">
+                    <input pattern="^[0-9]{4}-[0-9]{4}$" placeholder="Telefono 0000-0000" name="txtTelefonoUsuario"
+                        id="txtTelefonoUsuario" class="form-control" type="text" maxlength="9">
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <input type="submit" value="Guardar" class="btn btn-primary" id="btnGuardarUsuario">
+            <input type="button" value="Buscar" class="btn btn-secondary" id="btnBuscarUsuario">
+            <input type="reset" value="Limpiar" class="btn btn-warning" id="btnLimpiarUsuario">
+        </div>
+    </div>
+</form>
+<script>
+      // Variables del formulario de usuarios
+    var accionUsuario = 'nuevo',
+        idUsuario = '';
+
+    frmUsuario.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Al crear un usuario nuevo la clave es obligatoria; al editar, vacia = no cambiarla
+        if (accionUsuario == 'nuevo' && txtClaveUsuario.value == '') {
+            alert('La clave es obligatoria');
+            txtClaveUsuario.focus();
+            return;
+        }
+        guardarUsuario();
+    });
+    frmUsuario.addEventListener('reset', (e) => {
+        e.preventDefault();
+        limpiarFormularioUsuario();
+    });
+
+    function modificarUsuario(data, event) {
+        event.preventDefault();
+        idUsuario = data.idUsuario;
+        accionUsuario = "modificar";
+
+        txtUsuario.value = data.usuario;
+        txtClaveUsuario.value = '';
+        txtClaveUsuario.placeholder = 'Clave (vacia = no cambiar)';
+        txtNombreUsuario.value = data.nombre;
+        txtDireccionUsuario.value = data.direccion;
+        txtTelefonoUsuario.value = data.telefono;
+    }
+
+    async function guardarUsuario() {
+        let datos = {
+            modulo: "usuario",
+            usuario: txtUsuario.value,
+            clave: txtClaveUsuario.value,
+            nombre: txtNombreUsuario.value,
+            direccion: txtDireccionUsuario.value,
+            telefono: txtTelefonoUsuario.value,
+            accion: accionUsuario,
+            idUsuario
+        };
+        let response = await fetch('/usuario', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+        }), respuesta = await response.json();
+        if (respuesta.msg != "ok") {
+            alert("Error: " + respuesta.msg);
+            return;
+        }
+        if (typeof obtenerUsuarios === 'function') obtenerUsuarios();
+        limpiarFormularioUsuario();
+    }
+    function limpiarFormularioUsuario() {
+        accionUsuario = 'nuevo';
+        idUsuario = '';
+        txtUsuario.value = '';
+        txtClaveUsuario.value = '';
+        txtClaveUsuario.placeholder = 'Clave';
+        txtNombreUsuario.value = '';
+        txtDireccionUsuario.value = '';
+        txtTelefonoUsuario.value = '';
+    }
+    btnBuscarUsuario.addEventListener('click', (e) => {
+        e.preventDefault();
+        cargarForm('busqueda_usuarios');
+    });
+</script>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parcial II - Usuarios</title>
+    <style>
+        :root {
+            --aqua: #7fdbd0; --aqua-oscuro: #3fb5a8; --aqua-claro: #d9f7f2;
+            --lila: #b9a4f0; --lila-oscuro: #7b5fd1; --lila-claro: #efe9ff;
+            --rosa: #ffc6dd; --rosa-oscuro: #e0568a;
+            --texto: #3b3555; --suave: #8a84a3;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif; color: var(--texto);
+            background: radial-gradient(circle at 10% 10%, var(--aqua-claro), transparent 40%),
+                        radial-gradient(circle at 90% 30%, #f1eaff, transparent 45%), #f7fbfd;
+            min-height: 100vh;
+        }
+        header {
+            display: flex; align-items: center; justify-content: space-between; padding: 12px 32px;
+            background: linear-gradient(100deg, var(--aqua), var(--lila)); color: #fff;
+            box-shadow: 0 6px 20px rgba(123, 95, 209, .2);
+        }
+        header h1 { margin: 0; font-size: 20px; letter-spacing: .5px; }
+        #btnSalir {
+            background: rgba(255, 255, 255, .25); color: #fff; border: 1px solid rgba(255, 255, 255, .8);
+            padding: 7px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+        #btnSalir:hover { background: #fff; color: var(--lila-oscuro); }
+        main { max-width: 1400px; margin: 28px auto; padding: 0 20px; display: grid; grid-template-columns: minmax(480px, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
+        .tarjeta {
+            background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 12px 34px rgba(123, 95, 209, .12);
+        }
+        .tarjeta h2 { margin: 0 0 18px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        .tarjeta h2 span {
+            width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; font-size: 17px;
+            background: var(--lila-claro);
+        }
+        .rejilla { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 16px; }
+        .campo label { display: block; font-size: 13px; font-weight: 600; color: var(--lila-oscuro); margin-bottom: 6px; }
+        input[type=text], input[type=password], input[type=search] {
+            width: 100%; padding: 12px 15px; font-size: 15px; border: 2px solid #ece8f7; border-radius: 14px;
+            background: #faf9ff; color: var(--texto); outline: none; transition: .2s;
+        }
+        input:focus { border-color: var(--aqua); background: #fff; box-shadow: 0 0 0 4px var(--aqua-claro); }
+        .botones { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .btn {
+            border: 0; padding: 9px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+            color: #fff;
+        }
+        .btn:hover { opacity: .85; }
+        .guardar { background: var(--aqua-oscuro); }
+        .limpiar { background: #9a94b3; }
+        .buscar { background: var(--lila-oscuro); }
+        .editar { background: var(--aqua-oscuro); padding: 6px 12px; font-size: 13px; }
+        .eliminar { background: var(--rosa-oscuro); padding: 6px 12px; font-size: 13px; }
+        #mensaje { font-weight: 600; font-size: 14px; flex-basis: 100%; min-height: 20px; }
+        #mensaje.ok { color: var(--aqua-oscuro); }
+        #mensaje.error { color: var(--rosa-oscuro); }
+        .buscador { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+        .buscador input { flex: 1; min-width: 220px; }
+        .tabla-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--suave); padding: 4px 14px; }
+        td { padding: 12px 14px; background: #faf9ff; }
+        td:first-child { border-radius: 14px 0 0 14px; }
+        td:last-child { border-radius: 0 14px 14px 0; white-space: nowrap; }
+        tr.fila:hover td { background: var(--aqua-claro); }
+        .vacio { text-align: center; color: var(--suave); padding: 18px; }
+        .modo {
+            display: inline-block; font-size: 12px; padding: 3px 12px; border-radius: 999px; margin-left: 8px;
+            background: var(--rosa); color: var(--rosa-oscuro); font-weight: 700;
+        }
+        @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) { .rejilla { grid-template-columns: 1fr; } header { padding: 14px 18px; } }
+    </style>
+</head>
+<body>
+    <header>
+        <span></span>
+        <button id="btnSalir" type="button">Cerrar sesión</button>
+    </header>
+
+    <main>
+        <section class="tarjeta">
+            <h2><span>✎</span> Registro de usuarios <b id="modo" class="modo" hidden>Editando</b></h2>
+            <form id="frmUsuario">
+                <div class="rejilla">
+                    <div class="campo">
+                        <label for="txtUsuario">Usuario</label>
+                        <input type="text" id="txtUsuario" required maxlength="35" pattern="^[A-Za-z0-9_.]{3,35}$"
+                            title="3 a 35 caracteres: letras, números, _ o .">
+                    </div>
+                    <div class="campo">
+                        <label for="txtClaveUsuario">Clave</label>
+                        <input type="password" id="txtClaveUsuario" maxlength="35">
+                    </div>
+                    <div class="campo">
+                        <label for="txtNombreUsuario">Nombre</label>
+                        <input type="text" id="txtNombreUsuario" required maxlength="85">
+                    </div>
+                    <div class="campo">
+                        <label for="txtDireccionUsuario">Dirección</label>
+                        <input type="text" id="txtDireccionUsuario" maxlength="100">
+                    </div>
+                    <div class="campo">
+                        <label for="txtTelefonoUsuario">Teléfono</label>
+                        <input type="text" id="txtTelefonoUsuario" maxlength="9" placeholder="0000-0000"
+                            pattern="^[0-9]{4}-[0-9]{4}$" title="Formato 0000-0000">
+                    </div>
+                </div>
+                <div class="botones">
+                    <button type="submit" class="btn guardar" id="btnGuardarUsuario">Guardar</button>
+                    <button type="button" class="btn limpiar" id="btnLimpiarUsuario">Nuevo / Limpiar</button>
+                    <span id="mensaje"></span>
+                </div>
+            </form>
+        </section>
+
+        <section class="tarjeta">
+            <h2><span>⌕</span> Buscar usuarios</h2>
+            <div class="buscador">
+                <input type="search" id="txtBuscarUsuario" placeholder="Buscar por usuario, nombre, dirección o teléfono">
+                <button type="button" class="btn buscar" id="btnBuscarUsuario">Buscar</button>
+            </div>
+            <div class="tabla-wrap">
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Usuario</th><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody id="tblUsuarios"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let accionUsuario = 'nuevo', idUsuario = '', usuariosCargados = [];
+
+        const escaparHtml = t => String(t ?? '').replace(/[&<>"']/g,
+            c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+        function avisar(texto, tipo = 'ok') {
+            mensaje.textContent = texto;
+            mensaje.className = tipo;
+            setTimeout(() => { mensaje.textContent = ''; }, 3500);
+        }
+
+        async function enviarUsuario(datos) {
+            let response = await fetch('/usuario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ modulo: 'usuario', ...datos })
+            });
+            return await response.json();
+        }
+
+        frmUsuario.addEventListener('submit', async e => {
+            e.preventDefault();
+            // Usuario nuevo: la clave es obligatoria. Al editar, clave vacía = no cambiarla
+            if (accionUsuario == 'nuevo' && txtClaveUsuario.value == '') {
+                avisar('La clave es obligatoria', 'error');
+                txtClaveUsuario.focus();
+                return;
+            }
+            let respuesta = await enviarUsuario({
+                usuario: txtUsuario.value,
+                clave: txtClaveUsuario.value,
+                nombre: txtNombreUsuario.value,
+                direccion: txtDireccionUsuario.value,
+                telefono: txtTelefonoUsuario.value,
+                accion: accionUsuario,
+                idUsuario
+            });
+            if (respuesta.msg != 'ok') {
+                avisar('Error: ' + respuesta.msg, 'error');
+                return;
+            }
+            avisar(accionUsuario == 'nuevo' ? 'Usuario registrado' : 'Usuario actualizado');
+            limpiarFormulario();
+            obtenerUsuarios(txtBuscarUsuario.value);
+        });
+
+        function limpiarFormulario() {
+            frmUsuario.reset();
+            accionUsuario = 'nuevo';
+            idUsuario = '';
+            txtClaveUsuario.placeholder = '';
+            modo.hidden = true;
+        }
+        btnLimpiarUsuario.addEventListener('click', limpiarFormulario);
+
+        async function obtenerUsuarios(buscar = '') {
+            let response = await fetch(`/usuarios?buscar=${encodeURIComponent(buscar)}`);
+            usuariosCargados = (await response.json()) || [];
+            mostrarUsuarios();
+        }
+        btnBuscarUsuario.addEventListener('click', () => obtenerUsuarios(txtBuscarUsuario.value));
+        txtBuscarUsuario.addEventListener('keyup', () => obtenerUsuarios(txtBuscarUsuario.value));
+
+        function mostrarUsuarios() {
+            if (usuariosCargados.length == 0) {
+                tblUsuarios.innerHTML = '<tr><td class="vacio" colspan="6">No se encontraron usuarios</td></tr>';
+                return;
+            }
+            tblUsuarios.innerHTML = usuariosCargados.map((u, i) => `
+                <tr class="fila">
+                    <td>${u.idUsuario}</td>
+                    <td>${escaparHtml(u.usuario)}</td>
+                    <td>${escaparHtml(u.nombre)}</td>
+                    <td>${escaparHtml(u.direccion)}</td>
+                    <td>${escaparHtml(u.telefono)}</td>
+                    <td>
+                        <button class="btn editar" onclick="editarUsuario(${i})">Editar</button>
+                        <button class="btn eliminar" onclick="eliminarUsuario(${i})">Eliminar</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function editarUsuario(i) {
+            let u = usuariosCargados[i];
+            idUsuario = u.idUsuario;
+            accionUsuario = 'modificar';
+            txtUsuario.value = u.usuario;
+            txtClaveUsuario.value = '';
+            txtClaveUsuario.placeholder = 'Vacía = no cambiar';
+            txtNombreUsuario.value = u.nombre;
+            txtDireccionUsuario.value = u.direccion;
+            txtTelefonoUsuario.value = u.telefono;
+            modo.hidden = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            txtUsuario.focus();
+        }
+
+        async function eliminarUsuario(i) {
+            let u = usuariosCargados[i];
+            if (!confirm(`¿Seguro de eliminar al usuario: ${u.nombre}?`)) return;
+            let respuesta = await enviarUsuario({ accion: 'eliminar', idUsuario: u.idUsuario });
+            if (respuesta.msg != 'ok') {
+                avisar('Error: ' + respuesta.msg, 'error');
+                return;
+            }
+            avisar('Usuario eliminado');
+            obtenerUsuarios(txtBuscarUsuario.value);
+        }
+
+        btnSalir.addEventListener('click', async () => {
+            await fetch('/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ modulo: 'logout' })
+            });
+            location.href = '/';
+        });
+
+        obtenerUsuarios();
+    </script>
+</body>
+</html>
